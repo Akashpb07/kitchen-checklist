@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kitchen Items Checklist</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h2 {
+      color: #444;
+    }
+    .item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 10px;
+    }
+    label {
+      flex: 1;
+    }
+    input[type="number"], input[type="text"] {
+      width: 100px;
+      padding: 4px;
+    }
+    button {
+      margin: 10px 10px 0 0;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+    #total {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .add-form {
+      margin-top: 20px;
+    }
+    .add-form input {
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Kitchen Items (Editable Price)</h2>
+  <div id="checklist"></div>
+
+  <h2>Appliances</h2>
+  <div id="extras"></div>
+
+  <div class="add-form">
+    <h3>Add New Item ➕</h3>
+    <input type="text" id="newItemName" placeholder="Item name" />
+    <input type="number" id="newItemPrice" placeholder="Price" />
+    <button onclick="addNewItem()">Add</button>
+  </div>
+
+  <button onclick="saveData()">💾 Save</button>
+  <button onclick="calculateTotal()">🧮 Calculate Total</button>
+  <button onclick="resetData()">🔄 Reset</button>
+
+  <div id="total">Total Price: ₹0</div>
+
+  <script>
+    let kitchenItems = [
+      "Cooker",
+      "Tea Pan",
+      "Caney for Milk",
+      "Spatula",
+      "Fry Skimmer",
+      "Knife",
+      "Spoon",
+      "Fork Spoon",
+      "Tray",
+      "Tea cups",
+      "Utensils Stand Steel",
+      "Dustbin",
+      "4 - Plate",
+      "2 - Small Plates",
+      "2 - Bowl",
+      "Dinner Set",
+      "Juicer / Mixer (Sujata)",
+      "Grater",
+      "Chopper",
+      "Gas Stove (2 burner)",
+      "6 - Bowl steel",
+      "6 - Plate steel",
+      "glass steel",
+      "Jug",
+      "Masala Box"
+    ];
+
+    let extraItems = [
+      "Induction",
+      "Refrigerator",
+      "Washing Machine",
+      "Inverter",
+      "Cooler / AC"
+    ];
+
+    function createChecklist(id, items) {
+      const container = document.getElementById(id);
+      container.innerHTML = ''; // clear on reload
+      items.forEach((item, index) => {
+        const checkboxId = `${id}-item-${index}`;
+        const priceId = `${checkboxId}-price`;
+        const checked = localStorage.getItem(checkboxId) === "true";
+        const savedPrice = localStorage.getItem(priceId) || "";
+
+        const div = document.createElement("div");
+        div.className = "item";
+        div.innerHTML = `
+          <input type="checkbox" id="${checkboxId}" ${checked ? "checked" : ""}>
+          <label for="${checkboxId}">${item}</label>
+          ₹<input type="number" id="${priceId}" value="${savedPrice}" min="0">
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function saveData() {
+      const checkboxes = document.querySelectorAll("input[type='checkbox']");
+      const prices = document.querySelectorAll("input[type='number']");
+      checkboxes.forEach(cb => localStorage.setItem(cb.id, cb.checked));
+      prices.forEach(pi => localStorage.setItem(pi.id, pi.value));
+      alert("Saved!");
+    }
+
+    function calculateTotal() {
+      let total = 0;
+      const checkboxes = document.querySelectorAll("input[type='checkbox']");
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          const priceInput = document.getElementById(`${cb.id}-price`);
+          const val = parseFloat(priceInput.value);
+          if (!isNaN(val)) total += val;
+        }
+      });
+      document.getElementById("total").innerText = `Total Price: ₹${total}`;
+    }
+
+    function resetData() {
+      localStorage.clear();
+      createChecklist("checklist", kitchenItems);
+      createChecklist("extras", extraItems);
+      document.getElementById("total").innerText = `Total Price: ₹0`;
+    }
+
+    function addNewItem() {
+      const nameInput = document.getElementById("newItemName");
+      const priceInput = document.getElementById("newItemPrice");
+      const name = nameInput.value.trim();
+      const price = priceInput.value.trim();
+
+      if (!name) {
+        alert("Please enter item name.");
+        return;
+      }
+
+      kitchenItems.push(name);
+      createChecklist("checklist", kitchenItems);
+
+      const newIndex = kitchenItems.length - 1;
+      document.getElementById(`checklist-item-${newIndex}-price`).value = price;
+
+      nameInput.value = "";
+      priceInput.value = "";
+    }
+
+    createChecklist("checklist", kitchenItems);
+    createChecklist("extras", extraItems);
+  </script>
+
+</body>
+</html>
